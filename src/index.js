@@ -6,6 +6,9 @@ function eval() {
 
 function calculateNumber(mark , expresion , index) {
     let number;
+    if (expresion[index + 1] === '0' && mark === '/' ) {
+        throw new Error('TypeError: Devision by zero.');
+    }
     if (mark === '/') {
         number = expresion[index - 1] / expresion[index + 1];
     }
@@ -22,6 +25,7 @@ function calculateNumber(mark , expresion , index) {
 }
 
 function calculate(expr) {
+
     const marksCalculation = ['/', '*', '-', '+'];
     let expresion = expr;
     marksCalculation.forEach(mark => {
@@ -35,36 +39,42 @@ function calculate(expr) {
     const [number] = expresion.filter((elem) => {
         return !isNaN(parseInt(elem));
     });
-    console.log(number);
     return number;
 }
 
 function expressionCalculator(expr) {
+    const exprReg = /\d+|\D/g;
     const rightBracket = ')';
     const leftBracket = '(';
-    let exprArray = expr.split(' ');
-
+    let exprArray = expr.match(exprReg).filter((elem) => elem !== ' ');
     let firstRightBracket = exprArray.indexOf(rightBracket);
     let closeBracket = exprArray.lastIndexOf(leftBracket, firstRightBracket);
 
+    if (firstRightBracket === -1 && closeBracket !== -1 || firstRightBracket !== -1 && closeBracket === -1) {
+        throw new Error('ExpressionError: Brackets must be paired');
+    }
+
     while (firstRightBracket !== -1) {
         const expression = exprArray.slice(closeBracket, firstRightBracket + 1);
+
         let number = calculate(expression);
         exprArray = [...exprArray.slice(0, closeBracket), number, ...exprArray.slice(firstRightBracket + 1, exprArray.length)];
         firstRightBracket = exprArray.indexOf(rightBracket);
         closeBracket = exprArray.lastIndexOf(leftBracket, firstRightBracket);
     }
-    console.log(exprArray);
+    firstRightBracket = exprArray.indexOf(rightBracket);
+    closeBracket = exprArray.lastIndexOf(leftBracket, firstRightBracket);
+    if (firstRightBracket === -1 && closeBracket !== -1 || firstRightBracket !== -1 && closeBracket === -1) {
+        throw new Error('ExpressionError: Brackets must be paired');
+    }
+
     exprArray = calculate(exprArray);
 
     return parseFloat(parseFloat(exprArray).toFixed(4));
 }
 
 module.exports = {
-    expressionCalculator
-}
-
-const expr = "2-2";
-
-"Nested brackets test 28"
-console.log(expressionCalculator(expr));
+    expressionCalculator,
+    calculate,
+    calculateNumber
+};
